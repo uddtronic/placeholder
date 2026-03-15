@@ -1,0 +1,34 @@
+[
+  {
+    "name": "Get all users",
+    "path": "/api/users",
+    "method": "GET",
+    "response": {
+      "status": 200,
+      "json": [
+        {
+          "id": 1,
+          "name": "Leanne Graham",
+          "username": "Bret",
+          "email": "Sincere@april.biz"
+        },
+        {
+          "id": 2,
+          "name": "Ervin Howell",
+          "username": "Antonette",
+          "email": "Shanna@melissa.tv"
+        }
+      ]
+    }
+  },
+  {
+    "path": "/api/posts",
+    "method": "POST",
+    "response": {
+      "status": 201,
+      "json": {
+        "id": 101
+      }
+    }
+  }
+]
