@@ -12,6 +12,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridSortOrder;
 import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -50,11 +51,13 @@ public class DataListView extends VerticalLayout {
 
         Grid<StoredData> grid = new Grid<>();
         grid.setDataProvider(dataProvider);
-        grid.addColumn(StoredData::getFormattedCreatedAt)
+        var receivedColumn = grid.addColumn(StoredData::getFormattedCreatedAt)
+            .setComparator(StoredData::getCreatedAt)
             .setHeader("Received")
             .setWidth("20rem")
             .setFlexGrow(0)
             .setSortable(true);
+        grid.sort(GridSortOrder.desc(receivedColumn).build());
         grid.addColumn(StoredData::getMethod)
             .setHeader("Method")
             .setWidth("10rem")
