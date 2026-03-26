@@ -22,6 +22,18 @@
     }
   },
   {
+    "name": "Get a specific user",
+    "path": "/api/user/.*",
+    "method": "GET",
+    "response": {
+      "status": 200,
+      "json": {
+        "id": 999,
+        "name": "Regex User"
+     }
+    }
+  },
+  {
     "path": "/api/posts",
     "method": "POST",
     "response": {

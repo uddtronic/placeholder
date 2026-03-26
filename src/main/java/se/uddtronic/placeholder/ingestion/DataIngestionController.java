@@ -44,7 +44,7 @@ public class DataIngestionController implements ErrorController {
             String queryString = (String) request.getAttribute("jakarta.servlet.error.query_string");
 
             Optional<MockData> matchingMock = mocksService.getMocks().stream()
-                    .filter(mock -> mock.getPath().equals(originalPath)
+                    .filter(mock -> originalPath != null && originalPath.matches(mock.getPath())
                             && mock.getMethod().equalsIgnoreCase(originalMethod))
                     .findFirst();
 
