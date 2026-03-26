@@ -22,15 +22,30 @@
     }
   },
   {
-    "name": "Get a specific user",
+    "name": "Get user Leanne",
+    "path": "/api/user/1",
+    "method": "GET",
+    "priority": 1,
+    "response": {
+      "status": 200,
+      "json": {
+        "id": 1,
+        "name": "Leanne Graham",
+        "username": "Bret",
+        "email": "Sincere@april.biz"
+      }
+    }
+  },
+  {
+    "name": "Get another user",
     "path": "/api/user/.*",
     "method": "GET",
     "response": {
       "status": 200,
       "json": {
-        "id": 999,
-        "name": "Regex User"
-     }
+        "id": 1337,
+        "username": "Another"
+      }
     }
   },
   {

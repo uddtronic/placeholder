@@ -46,6 +46,11 @@ public class MocksListView extends VerticalLayout {
             .setWidth("10rem")
             .setFlexGrow(0)
             .setSortable(true);
+        grid.addColumn(MockData::getPriority)
+            .setHeader("Priority")
+            .setWidth("8rem")
+            .setFlexGrow(0)
+            .setSortable(true);
         grid.addColumn(MockData::getPath)
             .setHeader("Path")
             .setAutoWidth(true)

@@ -2,6 +2,7 @@ package se.uddtronic.placeholder.ingestion;
 
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,7 +47,7 @@ public class DataIngestionController implements ErrorController {
             Optional<MockData> matchingMock = mocksService.getMocks().stream()
                     .filter(mock -> originalPath != null && originalPath.matches(mock.getPath())
                             && mock.getMethod().equalsIgnoreCase(originalMethod))
-                    .findFirst();
+                    .max(Comparator.comparingInt(MockData::getPriority));
 
             int responseStatus;
             ResponseEntity<Object> response;

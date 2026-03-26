@@ -6,7 +6,6 @@ This is an early preview of the mocking tool Placeholder Mock.
 
 This project is published early to meet a deadline, but multiple features are currently missing.
 
-- Configure priority for mocks (needed when multiple can match)
 - Animate the request counter when it updates (important!)
 - Support matching query parameters in some way
 - Validate against OpenAPI spec
