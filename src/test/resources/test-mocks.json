@@ -1,0 +1,55 @@
+[
+  {
+    "name": "Regular mock",
+    "path": "/api/users",
+    "method": "GET",
+    "priority": 1,
+    "response": {
+      "status": 200,
+      "json": {
+        "message": "Hello world"
+      }
+    }
+  },
+  {
+    "name": "Lower priority",
+    "path": "/api/priority",
+    "method": "GET",
+    "priority": 1,
+    "response": {
+      "status": 200,
+      "json": {
+        "message": "Low priority"
+      }
+    }
+  },
+  {
+    "name": "Higher priority",
+    "path": "/api/priority",
+    "method": "GET",
+    "priority": 10,
+    "response": {
+      "status": 200,
+      "json": {
+        "message": "High priority"
+      }
+    }
+  },
+  {
+    "name": "Template mock",
+    "path": "/api/template/.*",
+    "method": "POST",
+    "priority": 1,
+    "variables": {
+      "var1": "value1"
+    },
+    "response": {
+      "status": 201,
+      "json": {
+        "hello": "{{body.name}}",
+        "var": "{{variables.var1}}",
+        "param1": "{{request.myParam}}"
+      }
+    }
+  }
+]

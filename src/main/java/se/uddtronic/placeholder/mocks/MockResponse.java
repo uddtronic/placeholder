@@ -5,6 +5,7 @@ import tools.jackson.databind.JsonNode;
 public class MockResponse {
     private int status;
     private JsonNode json;
+    private String file;
 
     public int getStatus() {
         return status;
@@ -20,5 +21,13 @@ public class MockResponse {
 
     public void setJson(JsonNode json) {
         this.json = json;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 }

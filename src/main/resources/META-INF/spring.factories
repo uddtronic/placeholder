@@ -1,0 +1,1 @@
+org.springframework.boot.diagnostics.FailureAnalyzer=se.uddtronic.placeholder.config.MockConfigFailureAnalyzer

@@ -1,10 +1,13 @@
 package se.uddtronic.placeholder.mocks;
 
+import java.util.Map;
+
 public class MockData {
     private String name;
     private String path;
     private String method;
     private int priority;
+    private Map<String, Object> variables;
     private MockResponse response;
 
     public String getName() {
@@ -37,6 +40,14 @@ public class MockData {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public Map<String, Object> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, Object> variables) {
+        this.variables = variables;
     }
 
     public MockResponse getResponse() {

@@ -38,12 +38,12 @@
   },
   {
     "name": "Get another user",
-    "path": "/api/user/.*",
+    "path": "/api/user/([0-9]+)",
     "method": "GET",
     "response": {
       "status": 200,
       "json": {
-        "id": 1337,
+        "id": "#num#{{groups.1}}",
         "username": "Another"
       }
     }

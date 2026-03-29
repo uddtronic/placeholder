@@ -1,6 +1,7 @@
 package se.uddtronic.placeholder.ingestion;
 
-
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import com.samskivert.mustache.Mustache;
 import jakarta.servlet.http.HttpServletRequest;
 import se.uddtronic.placeholder.ingestion.dto.ErrorResponse;
 import se.uddtronic.placeholder.mocks.MockData;
@@ -25,14 +27,16 @@ public class DataIngestionController implements ErrorController {
     private final RequestCounterService requestCounterService;
     private final ObjectMapper objectMapper;
     private final MocksService mocksService;
+    private final TemplateContextBuilder templateContextBuilder;
 
     public DataIngestionController(DataStorageService dataStorageService,
             RequestCounterService requestCounterService, ObjectMapper objectMapper,
-            MocksService mocksService) {
+            MocksService mocksService, TemplateContextBuilder templateContextBuilder) {
         this.dataStorageService = dataStorageService;
         this.requestCounterService = requestCounterService;
         this.objectMapper = objectMapper;
         this.mocksService = mocksService;
+        this.templateContextBuilder = templateContextBuilder;
     }
 
     @RequestMapping("/error")
@@ -55,9 +59,31 @@ public class DataIngestionController implements ErrorController {
             if (matchingMock.isPresent()) {
                 MockData mock = matchingMock.get();
                 responseStatus = mock.getResponse().getStatus();
+
+                String responseBodyStr;
+                if (mock.getResponse().getFile() != null) {
+                    try {
+                        responseBodyStr = Files.readString(Paths.get(mock.getResponse().getFile()));
+                    } catch (java.io.IOException _) {
+                        responseBodyStr = "{}";
+                    }
+                } else if (mock.getResponse().getJson() != null) {
+                    responseBodyStr = mock.getResponse().getJson().toString();
+                } else {
+                    responseBodyStr = "{}";
+                }
+
+                Map<String, Object> context = templateContextBuilder.buildContext(request, mock, data, originalPath);
+                try {
+                    responseBodyStr = Mustache.compiler().defaultValue("").compile(responseBodyStr).execute(context);
+                    responseBodyStr = responseBodyStr.replaceAll("\"#num#([^\"]*)\"", "$1");
+                } catch (Exception _) {
+                    // Ignore and just use response template as is
+                }
+
                 response = ResponseEntity.status(responseStatus)
                         .header("Content-Type", "application/json")
-                        .body(mock.getResponse().getJson().toString());
+                        .body(responseBodyStr);
             } else {
                 responseStatus = HttpStatus.NOT_FOUND.value();
                 response = new ResponseEntity<>(new ErrorResponse(
@@ -77,7 +103,7 @@ public class DataIngestionController implements ErrorController {
                 try {
                     Object json = objectMapper.readValue(data, Object.class);
                     dataToStore = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-                } catch (Exception e) {
+                } catch (Exception _) {
                     // Invalid JSON, just store as is
                 }
             }

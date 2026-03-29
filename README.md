@@ -42,3 +42,34 @@ curl -sv "http://localhost:8080/api/users"
 Open the UI at http://localhost:8080/ to see the configured mocks and requests as they come in.
 
 ![Placeholder Mock](screenshot.png)
+
+## Configuration
+
+The configuration file (e.g., `mocks.json`) contains a JSON array of mock objects. Each mock object defines an endpoint and its expected behavior.
+
+### Structure of a Mock Entry
+
+Each mock definition in the JSON array supports the following fields:
+
+- **`path`**: The endpoint path to match. It supports regular expressions with capture groups (e.g., `/api/user/([0-9]+)`).
+- **`method`**: The HTTP method to match (e.g., `GET`, `POST`).
+- **`name`** *(Optional)*: A descriptive name for the mock.
+- **`priority`** *(Optional)*: Determines which mock takes precedence when multiple paths overlap. Higher values have higher priority.
+- **`variables`** *(Optional)*: An object containing static key-value pairs that can be referenced within the response.
+- **`response`**: An object containing the HTTP `status` code and either a `json` object to return directly, or a `file` string pointing to an external template file relative to the execution directory.
+
+### Dynamic Response Templating
+
+The response body (whether defined via `json` or loaded from a `file`) supports dynamic templating using Mustache-style `{{...}}` syntax to inject request details or variables:
+
+- **`{{groups.n}}`**: Access regular expression capture groups from the `path` (e.g., `{{groups.1}}`).
+- **`{{body.propertyName}}`**: Access values from the incoming JSON request body. Supports nested properties (e.g., `{{body.address.city}}`).
+- **`{{headers.headerName}}`**: Access HTTP request headers (e.g., `{{headers.host}}`).
+- **`{{request.paramName}}`**: Access query parameters from the request URL (e.g., `{{request.q}}`).
+- **`{{variables.variableName}}`**: Inject custom variables defined in the mock's `variables` block.
+- **`{{now}}`**: Inject the current server timestamp.
+
+**Returning Numbers in JSON**:
+Since values in JSON must be valid types, you can't normally inject a raw number directly into a JSON string via templating (e.g., `"id": {{groups.1}}` is invalid JSON).
+To solve this, prefix your template string with `#num#`. After the template is evaluated, the quotes and the prefix will be stripped, converting it into a valid JSON number:
+`"id": "#num#{{groups.1}}"` becomes `"id": 42` in the final output. If you are using the `file` property, you don't need this prefix as external files don't strictly need to parse as JSON during initialization; you can simply write `"id": {{groups.1}}` directly in the file.
