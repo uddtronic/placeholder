@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import se.uddtronic.placeholder.ingestion.dto.ErrorResponse;
 import se.uddtronic.placeholder.mocks.MockData;
 import se.uddtronic.placeholder.mocks.MocksService;
+import se.uddtronic.placeholder.mocks.ValidationAction;
 import tools.jackson.databind.ObjectMapper;
 
 @Controller
@@ -28,15 +30,18 @@ public class DataIngestionController implements ErrorController {
     private final ObjectMapper objectMapper;
     private final MocksService mocksService;
     private final TemplateContextBuilder templateContextBuilder;
+    private final OpenApiValidationService openApiValidationService;
 
     public DataIngestionController(DataStorageService dataStorageService,
             RequestCounterService requestCounterService, ObjectMapper objectMapper,
-            MocksService mocksService, TemplateContextBuilder templateContextBuilder) {
+            MocksService mocksService, TemplateContextBuilder templateContextBuilder,
+            OpenApiValidationService openApiValidationService) {
         this.dataStorageService = dataStorageService;
         this.requestCounterService = requestCounterService;
         this.objectMapper = objectMapper;
         this.mocksService = mocksService;
         this.templateContextBuilder = templateContextBuilder;
+        this.openApiValidationService = openApiValidationService;
     }
 
     @RequestMapping("/error")
@@ -55,35 +60,63 @@ public class DataIngestionController implements ErrorController {
 
             int responseStatus;
             ResponseEntity<Object> response;
+            List<String> validationErrors = Collections.emptyList();
 
             if (matchingMock.isPresent()) {
                 MockData mock = matchingMock.get();
-                responseStatus = mock.getResponse().getStatus();
+                validationErrors = openApiValidationService.validateRequest(mock, request, data);
 
-                String responseBodyStr;
-                if (mock.getResponse().getFile() != null) {
-                    try {
-                        responseBodyStr = Files.readString(Paths.get(mock.getResponse().getFile()));
-                    } catch (java.io.IOException _) {
+                MockData mockToUse = mock;
+                boolean shouldFail = false;
+                if (!validationErrors.isEmpty() && mock.getValidation() != null) {
+                    ValidationAction action = mock.getValidation().getAction();
+                    if (action == ValidationAction.FAIL) {
+                        shouldFail = true;
+                    } else if (action == ValidationAction.CUSTOM_ERROR && mock.getValidation().getCustomErrorResponse() != null) {
+                        mockToUse = new MockData();
+                        mockToUse.setPath(mock.getPath());
+                        mockToUse.setResponse(mock.getValidation().getCustomErrorResponse());
+                        mockToUse.setVariables(mock.getVariables());
+                    }
+                }
+
+                if (shouldFail) {
+                    responseStatus = 422;
+                    Map<String, Object> errorBody = Map.of(
+                        "error", "Validation failed",
+                        "details", validationErrors
+                    );
+                    response = ResponseEntity.status(responseStatus)
+                            .header("Content-Type", "application/json")
+                            .body(errorBody);
+                } else {
+                    responseStatus = mockToUse.getResponse().getStatus();
+
+                    String responseBodyStr;
+                    if (mockToUse.getResponse().getFile() != null) {
+                        try {
+                            responseBodyStr = Files.readString(Paths.get(mockToUse.getResponse().getFile()));
+                        } catch (java.io.IOException _) {
+                            responseBodyStr = "{}";
+                        }
+                    } else if (mockToUse.getResponse().getJson() != null) {
+                        responseBodyStr = mockToUse.getResponse().getJson().toString();
+                    } else {
                         responseBodyStr = "{}";
                     }
-                } else if (mock.getResponse().getJson() != null) {
-                    responseBodyStr = mock.getResponse().getJson().toString();
-                } else {
-                    responseBodyStr = "{}";
-                }
 
-                Map<String, Object> context = templateContextBuilder.buildContext(request, mock, data, originalPath);
-                try {
-                    responseBodyStr = Mustache.compiler().defaultValue("").compile(responseBodyStr).execute(context);
-                    responseBodyStr = responseBodyStr.replaceAll("\"#num#([^\"]*)\"", "$1");
-                } catch (Exception _) {
-                    // Ignore and just use response template as is
-                }
+                    Map<String, Object> context = templateContextBuilder.buildContext(request, mockToUse, data, originalPath);
+                    try {
+                        responseBodyStr = Mustache.compiler().defaultValue("").compile(responseBodyStr).execute(context);
+                        responseBodyStr = responseBodyStr.replaceAll("\"#num#([^\"]*)\"", "$1");
+                    } catch (Exception _) {
+                        // Ignore and just use response template as is
+                    }
 
-                response = ResponseEntity.status(responseStatus)
-                        .header("Content-Type", "application/json")
-                        .body(responseBodyStr);
+                    response = ResponseEntity.status(responseStatus)
+                            .header("Content-Type", "application/json")
+                            .body(responseBodyStr);
+                }
             } else {
                 responseStatus = HttpStatus.NOT_FOUND.value();
                 response = new ResponseEntity<>(new ErrorResponse(
@@ -114,7 +147,7 @@ public class DataIngestionController implements ErrorController {
             }
 
             dataStorageService.storeData(dataToStore, contentType, path, headers, originalMethod,
-                    request.getParameterMap(), responseStatus);
+                    request.getParameterMap(), responseStatus, validationErrors);
             requestCounterService.increment();
 
             return response;

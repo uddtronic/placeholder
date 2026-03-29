@@ -2,6 +2,7 @@ package se.uddtronic.placeholder.ingestion;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -19,9 +20,10 @@ public class StoredData {
     private final Map<String, String> headers;
     private final Map<String, String[]> queryParameters;
     private final int status;
+    private final java.util.List<String> validationErrors;
 
     public StoredData(String data, String contentType, String path, Map<String, String> headers, String method,
-            Map<String, String[]> queryParameters, int status) {
+            Map<String, String[]> queryParameters, int status, List<String> validationErrors) {
         this.id = ID_COUNTER.incrementAndGet();
         this.data = data;
         this.contentType = contentType;
@@ -31,6 +33,7 @@ public class StoredData {
         this.method = method;
         this.queryParameters = queryParameters;
         this.status = status;
+        this.validationErrors = validationErrors;
     }
 
 
@@ -65,6 +68,10 @@ public class StoredData {
 
     public Map<String, String[]> getQueryParameters() {
         return queryParameters;
+    }
+
+    public java.util.List<String> getValidationErrors() {
+        return validationErrors;
     }
 
     public String getFormattedCreatedAt() {

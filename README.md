@@ -8,7 +8,6 @@ This project is published early to meet a deadline, but multiple features are cu
 
 - Animate the request counter when it updates (important!)
 - Support matching query parameters in some way
-- Validate against OpenAPI spec
 - More flexible return types than just JSON
 - Show responses sent in adition to the requests
 - General code cleanup (it got a bit messy)

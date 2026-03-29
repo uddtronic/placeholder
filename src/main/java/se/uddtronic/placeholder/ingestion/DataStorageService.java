@@ -28,8 +28,8 @@ public class DataStorageService {
     }
 
     public void storeData(String data, String contentType, String path, Map<String, String> headers, String method,
-            Map<String, String[]> queryParameters, int status) {
-        var storedData = new StoredData(data, contentType, path, headers, method, queryParameters, status);
+            Map<String, String[]> queryParameters, int status, List<String> validationErrors) {
+        var storedData = new StoredData(data, contentType, path, headers, method, queryParameters, status, validationErrors);
         storage.add(storedData);
 
         StoredData removedItem = null;

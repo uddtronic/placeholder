@@ -1,0 +1,31 @@
+openapi: 3.0.0
+info:
+  title: Posts API
+  version: 1.0.0
+paths:
+  /api/posts:
+    post:
+      summary: Create a new post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userId
+                - title
+              properties:
+                userId:
+                  type: integer
+                  description: The ID of the user creating the post
+                title:
+                  type: string
+                  minLength: 1
+                  description: The title of the post
+                body:
+                  type: string
+                  description: The content of the post
+      responses:
+        '201':
+          description: Created

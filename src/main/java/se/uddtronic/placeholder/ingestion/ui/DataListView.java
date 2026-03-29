@@ -169,6 +169,17 @@ public class DataListView extends VerticalLayout {
             .set("flex-grow", "1");
         queryContent.setVisible(false);
 
+        Pre validationContent = new Pre();
+        if (storedData.getValidationErrors() != null && !storedData.getValidationErrors().isEmpty()) {
+            validationContent.setText(String.join("\n", storedData.getValidationErrors()));
+        }
+        validationContent.getStyle()
+            .set("min-width", "0")
+            .set("overflow", "auto")
+            .set("flex-grow", "1")
+            .set("color", "var(--lumo-error-text-color)");
+        validationContent.setVisible(false);
+
         boolean firstVisible = true;
         Map<Tab, Component> tabToContentMap = new LinkedHashMap<>();
         if (storedData.getData() != null && !storedData.getData().isBlank()) {
@@ -184,6 +195,11 @@ public class DataListView extends VerticalLayout {
         if (storedData.getQueryParameters() != null && !storedData.getQueryParameters().isEmpty()) {
             tabToContentMap.put(new Tab("Query"), queryContent);
             queryContent.setVisible(firstVisible);
+            firstVisible = false;
+        }
+        if (storedData.getValidationErrors() != null && !storedData.getValidationErrors().isEmpty()) {
+            tabToContentMap.put(new Tab("Validation"), validationContent);
+            validationContent.setVisible(firstVisible);
             firstVisible = false;
         }
 
@@ -209,7 +225,7 @@ public class DataListView extends VerticalLayout {
 
         dialog.getHeader().add(copyButton);
 
-        HorizontalLayout contentPanel = new HorizontalLayout(dataContent, headersContent, queryContent);
+        HorizontalLayout contentPanel = new HorizontalLayout(dataContent, headersContent, queryContent, validationContent);
         contentPanel.setSizeFull();
         contentPanel.setPadding(false);
         contentPanel.setSpacing(false);

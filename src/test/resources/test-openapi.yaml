@@ -1,0 +1,47 @@
+openapi: 3.0.0
+info:
+  title: Test API
+  version: 1.0.0
+components:
+  schemas:
+    MyPayload:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 3
+paths:
+  /api/validated/warn:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyPayload'
+      responses:
+        '200':
+          description: OK
+  /api/validated/fail:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyPayload'
+      responses:
+        '200':
+          description: OK
+  /api/validated/custom:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MyPayload'
+      responses:
+        '200':
+          description: OK

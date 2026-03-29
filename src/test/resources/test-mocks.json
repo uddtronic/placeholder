@@ -51,5 +51,48 @@
         "param1": "{{request.myParam}}"
       }
     }
+  },
+  {
+    "name": "Validation WARN",
+    "path": "/api/validated/warn",
+    "method": "POST",
+    "validation": {
+      "openApiSpec": "src/test/resources/test-openapi.yaml",
+      "action": "WARN"
+    },
+    "response": {
+      "status": 200,
+      "json": {"result": "success"}
+    }
+  },
+  {
+    "name": "Validation FAIL",
+    "path": "/api/validated/fail",
+    "method": "POST",
+    "validation": {
+      "openApiSpec": "src/test/resources/test-openapi.yaml",
+      "action": "FAIL"
+    },
+    "response": {
+      "status": 200,
+      "json": {"result": "success"}
+    }
+  },
+  {
+    "name": "Validation CUSTOM_ERROR",
+    "path": "/api/validated/custom",
+    "method": "POST",
+    "validation": {
+      "openApiSpec": "src/test/resources/test-openapi.yaml",
+      "action": "CUSTOM_ERROR",
+      "customErrorResponse": {
+        "status": 400,
+        "json": {"my_error": "failed_validation"}
+      }
+    },
+    "response": {
+      "status": 200,
+      "json": {"result": "success"}
+    }
   }
 ]

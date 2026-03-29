@@ -51,6 +51,10 @@
   {
     "path": "/api/posts",
     "method": "POST",
+    "validation": {
+      "openApiSpec": "posts-openapi.yaml",
+      "action": "FAIL"
+    },
     "response": {
       "status": 201,
       "json": {

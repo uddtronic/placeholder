@@ -67,4 +67,64 @@ public class DataIngestionControllerTest {
         assertThat(response.getBody()).contains("\"var\":\"value1\"");
         assertThat(response.getBody()).contains("\"param1\":\"paramValue\"");
     }
+
+    @Test
+    public void testValidationWarn() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        // Invalid body (name is too short)
+        String body = "{\"name\":\"Al\"}";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(getBaseUrl() + "/api/validated/warn", entity, String.class);
+        // Should still return 200 because action is WARN
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("\"result\":\"success\"");
+    }
+
+    @Test
+    public void testValidationFail() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String body = "{\"name\":\"Al\"}";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        try {
+            restTemplate.postForEntity(getBaseUrl() + "/api/validated/fail", entity, String.class);
+            fail("Expected 422 Unprocessable Entity");
+        } catch (HttpClientErrorException e) {
+            assertThat(e.getStatusCode().value()).isEqualTo(422);
+            assertThat(e.getResponseBodyAsString()).contains("Validation failed");
+        }
+    }
+
+    @Test
+    public void testValidationCustomError() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String body = "{\"name\":\"Al\"}";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        try {
+            restTemplate.postForEntity(getBaseUrl() + "/api/validated/custom", entity, String.class);
+            fail("Expected 400 Bad Request");
+        } catch (HttpClientErrorException e) {
+            assertThat(e.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(e.getResponseBodyAsString()).contains("\"my_error\":\"failed_validation\"");
+        }
+    }
+
+    @Test
+    public void testValidationPass() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        // Valid body
+        String body = "{\"name\":\"Alice\"}";
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(getBaseUrl() + "/api/validated/fail", entity, String.class);
+        // Should return 200 because validation passes
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("\"result\":\"success\"");
+    }
 }

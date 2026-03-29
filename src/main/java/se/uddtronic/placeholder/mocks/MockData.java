@@ -9,6 +9,7 @@ public class MockData {
     private int priority;
     private Map<String, Object> variables;
     private MockResponse response;
+    private ValidationConfig validation;
 
     public String getName() {
         return name;
@@ -56,5 +57,13 @@ public class MockData {
 
     public void setResponse(MockResponse response) {
         this.response = response;
+    }
+
+    public ValidationConfig getValidation() {
+        return validation;
+    }
+
+    public void setValidation(ValidationConfig validation) {
+        this.validation = validation;
     }
 }
