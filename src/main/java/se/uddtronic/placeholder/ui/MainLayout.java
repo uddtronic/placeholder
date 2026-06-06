@@ -61,7 +61,16 @@ public final class MainLayout extends AppLayout {
         super.onAttach(attachEvent);
         UI ui = attachEvent.getUI();
         registration = requestCounterService
-                .register(count -> ui.access(() -> requestCounter.setText(String.valueOf(count))));
+                .register(count -> ui.access(() -> {
+                    requestCounter.setText(String.valueOf(count));
+                    if (count > 0) {
+                        requestCounter.getElement().executeJs("""
+                                this.classList.remove('fade-in');
+                                void this.offsetWidth;
+                                this.classList.add('fade-in');
+                                """);
+                    }
+                }));
     }
 
     @Override
